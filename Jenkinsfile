@@ -123,14 +123,6 @@ pipeline {
                 }
             }
         }
-    }    
-    post {
-        always {
-            cleanWs()
-            mail to: 'huseynzade.dadas@gmail.com',
-            subject: "Jenkins Build: ${currentBuild.result}",
-            body: "Job: ${env.JOB_NAME} \n Build Number: ${env.BUILD_NUMBER}"
-        }
     }
 }
    
