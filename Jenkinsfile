@@ -19,6 +19,9 @@ spec:
     image: docker:dind
     securityContext:
       privileged: true
+  - name: helm
+    image: alpine/helm:3.11.1  # Helm container
+    command: ['cat']
     tty: true
 """
         }
@@ -47,16 +50,15 @@ spec:
                 git url: "${GIT_REPO}", branch: 'main'
             }
         }
-        stage('Prepare Docker and Helm') {
+        stage('Prepare Docker') {
             steps {
                 container('docker') {
-                    sh 'dockerd-entrypoint.sh &>/dev/null &'  // Start Docker daemon
-                    sh 'sleep 20'                             // Wait for Docker to initialize
-                    sh 'apk add --no-cache aws-cli kubectl helm'  // Install AWS CLI, Helm, and kubectl
-                    sh 'aws --version'                        // Verify AWS CLI installation
-                    sh 'docker --version'                     // Verify Docker installation
-                    sh 'kubectl version --client'             // Verify kubectl installation
-                    sh 'helm version'                         // Verify Helm installation
+                    sh 'dockerd-entrypoint.sh &>/dev/null &' // Start Docker daemon
+                    sh 'sleep 20'                            // Wait for Docker to initialize
+                    sh 'apk add --no-cache aws-cli kubectl'  // Install AWS CLI and Helm
+                    sh 'aws --version'                       // Verify AWS CLI installation
+                    sh 'docker --version'                    // Verify Docker installation
+                    sh 'kubectl version --client'            // Verify kubectl installation
                 }
             }
         }
@@ -78,15 +80,22 @@ spec:
         stage('Push Docker Image to ECR') {
             when { expression { params.PUSH_TO_ECR == true } }
             steps {
-                container('docker') {
-                    withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
-                        // Log in to ECR
-                        sh """
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
-                        """
+                script {
+                    if (currentBuild.result != 'FAILURE') {  //Capture success (or unstable)
+                        env.PUSH_SUCCESSFUL = true
+                    } else {
+                        env.PUSH_SUCCESSFUL = false // Explicitly set to false on failure
                     }
-                    // Push Docker image to ECR
-                    sh "docker push ${ECR_REPOSITORY}:${IMAGE_TAG}"
+                    container('docker') {
+                        withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
+                            // Log in to ECR
+                            sh """
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
+                            """
+                        }
+                        // Push Docker image to ECR
+                        sh "docker push ${ECR_REPOSITORY}:${IMAGE_TAG}"
+                    }
                 }
             }
         }
@@ -95,13 +104,9 @@ spec:
                 container('docker') {
                     withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
                         sh """
-                        aws ecr get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
+                        aws ecr get-login-password --region \${AWS_REGION} | docker login --username AWS --password-stdin \${ECR_REPOSITORY}
 
-                        kubectl create secret docker-registry ecr-secret \
-                            --docker-server = ${ECR_REPOSITORY} \
-                            --docker-username=AWS \
-                            --docker-password=$(aws ecr get-login-password --region ${AWS_REGION}) \
-                            --namespace jenkins
+                        kubectl create secret generic ecr-secret --namespace=jenkins --from-file=.dockerconfigjson=\$HOME/.docker/config.json --dry-run=client -o json | kubectl apply -f -
                         """
                     }
                 }
@@ -110,7 +115,7 @@ spec:
         stage('Deploy to Kubernetes with Helm') {
             when { expression { params.PUSH_TO_ECR == true } }
             steps {
-                container('docker') {
+                container('helm') {
                     sh """
                     helm upgrade --install my-app ./my-app \\
                         --set deployment.myApp.image.repository=${ECR_REPOSITORY} \\
