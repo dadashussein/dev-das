@@ -3,26 +3,26 @@ pipeline {
         kubernetes {
             label 'docker-build'
             yaml """
-apiVersion: v1
-kind: Pod
-spec:
-  serviceAccountName: jenkins
-  containers:
-  - name: jenkins-agent
-    image: jenkins/inbound-agent:latest
-    command:
-    - cat
-    tty: true
-    securityContext:
-      privileged: true
-  - name: docker
-    image: docker:dind
-    securityContext:
-      privileged: true
-  - name: helm
-    image: alpine/helm:3.11.1  # Helm container
-    command: ['cat']
-    tty: true
+                apiVersion: v1
+                kind: Pod
+                spec:
+                    serviceAccountName: jenkins
+                    containers:
+                - name: jenkins-agent
+                    image: jenkins/inbound-agent:latest
+                    command:
+                    - cat
+                    tty: true
+                    securityContext:
+                    privileged: true
+                - name: docker
+                    image: docker:dind
+                    securityContext:
+                    privileged: true
+                - name: helm
+                    image: alpine/helm:3.11.1  # Helm container
+                    command: ['cat']
+                    tty: true
 """
         }
     }
@@ -31,7 +31,7 @@ spec:
         AWS_ACCOUNT_ID = '051826725870'
         ECR_REPOSITORY = '051826725870.dkr.ecr.us-east-1.amazonaws.com/nestjs'
         IMAGE_TAG = "latest"
-        AWS_REGION = 'us-west-1'
+        AWS_REGION = 'eu-west-1'
         GIT_REPO = 'https://github.com/dadashussein/dev-das.git' 
         GITHUB_REPO = 'https://github.com/dadashussein/dev-das.git'
         GITHUB_BRANCH = 'main'
