@@ -29,7 +29,7 @@ spec:
     environment {
         AWS_CREDENTIALS_ID = 'aws_credentials'
         AWS_ACCOUNT_ID = '051826725870'
-        ECR_REPOSITORY = '051826725870.dkr.ecr.us-east-1.amazonaws.com/nestjs'
+        ECR_REPOSITORY = '051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs'
         IMAGE_TAG = 'latest'
         AWS_REGION = 'eu-west-1'
         GIT_REPO = 'https://github.com/dadashussein/dev-das.git'
