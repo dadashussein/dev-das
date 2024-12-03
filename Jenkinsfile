@@ -26,6 +26,9 @@ spec:
 """
         }
     }
+    parameters {
+        booleanParam(name: 'PUSH_TO_ECR', defaultValue: true, description: 'Push image to ECR and deploy to Kubernetes')
+    }
     environment {
         AWS_CREDENTIALS_ID = 'aws_credentials'
         AWS_ACCOUNT_ID = '051826725870'
@@ -114,15 +117,14 @@ spec:
             steps {
                 container('helm') {
                     sh """
-                    helm upgrade --install word-cloud-generator ./helm/word-cloud-generator \\
-                        --set image.repository=${ECR_REPOSITORY} \\
-                        --set image.tag=${IMAGE_TAG} \\
-                        -f ./helm/word-cloud-generator/values.yaml \\
-                        --namespace jenkins
+                    helm upgrade --install my-app ./my-app \\
+                        --set deployment.myApp.image.repository=${ECR_REPOSITORY} \\
+                        --set deployment.myApp.image.tag=${IMAGE_TAG} \\
+                        --namespace jenkins \\
+                        --create-namespace
                     """
                 }
             }
         }
     }
 }
-
