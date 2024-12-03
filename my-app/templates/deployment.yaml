@@ -18,12 +18,13 @@ spec:
         app: my-app
       {{- include "my-chart.selectorLabels" . | nindent 8 }}
     spec:
+      imagePullSecrets:
+      - name: ecr-secret
       containers:
       - env:
         - name: KUBERNETES_CLUSTER_DOMAIN
           value: {{ quote .Values.kubernetesClusterDomain }}
-        image: {{ .Values.deployment.myApp.image.repository }}:{{ .Values.deployment.myApp.image.tag
-          | default .Chart.AppVersion }}
+        image: {{ .Values.deployment.myApp.image.repository }}:{{ .Values.deployment.myApp.image.tag | default .Chart.AppVersion }}
         name: my-app
         ports:
         - containerPort: 80
