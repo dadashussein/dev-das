@@ -3,26 +3,26 @@ pipeline {
         kubernetes {
             label 'docker-build'
             yaml """
-                apiVersion: v1
-                kind: Pod
-                spec:
-                    serviceAccountName: jenkins
-                    containers:
-                - name: jenkins-agent
-                    image: jenkins/inbound-agent:latest
-                    command:
-                    - cat
-                    tty: true
-                    securityContext:
-                    privileged: true
-                - name: docker
-                    image: docker:dind
-                    securityContext:
-                    privileged: true
-                - name: helm
-                    image: alpine/helm:3.11.1  # Helm container
-                    command: ['cat']
-                    tty: true
+apiVersion: v1
+kind: Pod
+spec:
+  serviceAccountName: jenkins
+  containers:
+  - name: jenkins-agent
+    image: jenkins/inbound-agent:latest
+    command:
+    - cat
+    tty: true
+    securityContext:
+      privileged: true
+  - name: docker
+    image: docker:dind
+    securityContext:
+      privileged: true
+  - name: helm
+    image: alpine/helm:3.11.1  # Helm container
+    command: ['cat']
+    tty: true
 """
         }
     }
@@ -30,9 +30,9 @@ pipeline {
         AWS_CREDENTIALS_ID = 'aws_credentials'
         AWS_ACCOUNT_ID = '051826725870'
         ECR_REPOSITORY = '051826725870.dkr.ecr.us-east-1.amazonaws.com/nestjs'
-        IMAGE_TAG = "latest"
+        IMAGE_TAG = 'latest'
         AWS_REGION = 'eu-west-1'
-        GIT_REPO = 'https://github.com/dadashussein/dev-das.git' 
+        GIT_REPO = 'https://github.com/dadashussein/dev-das.git'
         GITHUB_REPO = 'https://github.com/dadashussein/dev-das.git'
         GITHUB_BRANCH = 'main'
     }
@@ -41,10 +41,10 @@ pipeline {
             steps {
                 git url: "${GITHUB_REPO}", branch: "${GITHUB_BRANCH}"
             }
-         }       
-        stage('Checkout Application Code') { 
+        }
+        stage('Checkout Application Code') {
             steps {
-               git url: "${GIT_REPO}", branch: 'main'
+                git url: "${GIT_REPO}", branch: 'main'
             }
         }
         stage('Prepare Docker') {
@@ -59,11 +59,11 @@ pipeline {
                 }
             }
         }
-        stage('Unit Tests') {  
+        stage('Unit Tests') {
             steps {
                 git url: "${GITHUB_REPO}", branch: "${GITHUB_BRANCH}" // Checkout here as well
                 container('docker') {
-                    sh "docker build -t my-app -f Dockerfile ."  
+                    sh 'docker build -t my-app -f Dockerfile .'
                 }
             }
         }
@@ -82,7 +82,7 @@ pipeline {
                         env.PUSH_SUCCESSFUL = true
                     } else {
                         env.PUSH_SUCCESSFUL = false // Explicitly set to false on failure
-                        }
+                    }
                     container('docker') {
                         withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
                             // Log in to ECR
@@ -125,4 +125,4 @@ pipeline {
         }
     }
 }
-   
+
