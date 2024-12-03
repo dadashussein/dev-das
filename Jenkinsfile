@@ -98,7 +98,7 @@ spec:
                         aws ecr get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
 
                         kubectl create secret docker-registry ecr-secret \
-                            --docker-server=${ECR_REPOSITORY} \
+                            --docker-server = ${ECR_REPOSITORY} \
                             --docker-username=AWS \
                             --docker-password=$(aws ecr get-login-password --region ${AWS_REGION}) \
                             --namespace jenkins
