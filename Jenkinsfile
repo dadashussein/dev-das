@@ -32,7 +32,7 @@ spec:
     environment {
         AWS_CREDENTIALS_ID = 'aws_credentials'
         AWS_ACCOUNT_ID = '051826725870'
-        ECR_REPOSITORY = 'public.ecr.aws/b8e7o6b4/rolling/app'
+        ECR_REPOSITORY = '051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs'
         IMAGE_TAG = 'latest'
         AWS_REGION = 'eu-west-1'
         GIT_REPO = 'https://github.com/dadashussein/dev-das.git'
@@ -62,19 +62,7 @@ spec:
                     sh 'apk add --no-cache aws-cli kubectl' 
                     sh 'aws --version'        
                     sh 'docker --version'             
-                    sh 'kubectl version --client'
-                    // Login to ECR Public
-                    withCredentials([[$class: 'AmazonWebServicesCredentialsBinding',
-                        credentialsId: AWS_CREDENTIALS_ID,
-                        accessKeyVariable: 'AWS_ACCESS_KEY_ID',
-                        secretKeyVariable: 'AWS_SECRET_ACCESS_KEY'
-                    ]]) {
-                        sh '''
-                            aws ecr-public get-login-password --region us-east-1 > /tmp/ecr_password
-                            cat /tmp/ecr_password | docker login -u AWS --password-stdin public.ecr.aws/b8e7o6b4
-                            rm -f /tmp/ecr_password
-                        '''
-                    }
+                    sh 'kubectl version --client'  
                 }
             }
         }
@@ -106,7 +94,7 @@ spec:
                         withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
                             // Log in to ECR
                             sh """
-                            aws ecr-public get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
+                            aws ecr get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
                             """
                         }
                         // Push Docker image to ECR
