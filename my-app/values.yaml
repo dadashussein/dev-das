@@ -4,6 +4,8 @@ deployment:
       repository: 051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs
       pullPolicy: Always
       tag: latest
+    imagePullSecrets:
+    - name: eu-west-1-ecr-registry
   replicas: 1
 kubernetesClusterDomain: cluster.local
 service:
