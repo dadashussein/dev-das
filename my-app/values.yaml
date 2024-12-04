@@ -1,28 +1,13 @@
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: myapp-deployment
-spec:
+deployment:
+  myApp:
+    image:
+      repository: 051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs
+      pullPolicy: Always
+      tag: latest
+    imagePullSecrets:
+    - name: eu-west-1-ecr-registry
   replicas: 1
-  selector:
-    matchLabels:
-      app: myapp
-  template:
-    metadata:
-      labels:
-        app: myapp
-    spec:
-      imagePullSecrets:
-        - name: eu-west-1-ecr-registry
-      containers:
-        - name: nestjs-container
-          image: 051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs:latest
-          imagePullPolicy: Always
-          ports:
-            - containerPort: 8080
-
 kubernetesClusterDomain: cluster.local
-
 service:
   ports:
   - port: 80
