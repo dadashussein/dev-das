@@ -107,15 +107,15 @@ spec:
             steps {
                 container('docker') {
                     withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
-                        sh """
-                        TOKEN=`aws ecr --region ${AWS_REGION} get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
+                        sh '''
+                        TOKEN=$(aws ecr --region ${AWS_REGION} get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2)
                         kubectl delete secret --ignore-not-found ${SECRET_NAME}
-                        kubectl create secret docker-registry $SECRET_NAME -n ${NAMESPACE} \
+                        kubectl create secret docker-registry ${SECRET_NAME} -n ${NAMESPACE} \
                         --docker-server=https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com \
                         --docker-username=AWS \
                         --docker-password="${TOKEN}" \
                         --docker-email="${EMAIL}"
-                        """
+                        '''
                     }
                 }
             }
