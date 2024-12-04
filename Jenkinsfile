@@ -36,8 +36,12 @@ spec:
         IMAGE_TAG = 'latest'
         AWS_REGION = 'eu-west-1'
         GIT_REPO = 'https://github.com/dadashussein/dev-das.git'
+        SECRET_NAME = "${AWS_REGION}-ecr-registry"
+        DEPLOYMENT_NAME = 'my-app'
+        EMAIL = 'huseynzade.dadas@gmail.com'
         GITHUB_REPO = 'https://github.com/dadashussein/dev-das.git'
         GITHUB_BRANCH = 'main'
+        NAMESPACE='jenkins'
     }
     stages {
         stage('Checkout Dockerfile') {
@@ -53,12 +57,12 @@ spec:
         stage('Prepare Docker') {
             steps {
                 container('docker') {
-                    sh 'dockerd-entrypoint.sh &>/dev/null &' // Start Docker daemon
-                    sh 'sleep 20'                            // Wait for Docker to initialize
-                    sh 'apk add --no-cache aws-cli kubectl'  // Install AWS CLI and Helm
-                    sh 'aws --version'                       // Verify AWS CLI installation
-                    sh 'docker --version'                    // Verify Docker installation
-                    sh 'kubectl version --client'            // Verify kubectl installation
+                    sh 'dockerd-entrypoint.sh &>/dev/null &'
+                    sh 'sleep 20'                          
+                    sh 'apk add --no-cache aws-cli kubectl' 
+                    sh 'aws --version'        
+                    sh 'docker --version'             
+                    sh 'kubectl version --client'  
                 }
             }
         }
@@ -104,9 +108,13 @@ spec:
                 container('docker') {
                     withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
                         sh """
-                        aws ecr get-login-password --region \${AWS_REGION} | docker login --username AWS --password-stdin \${ECR_REPOSITORY}
-
-                        kubectl create secret generic ecr-secret --namespace=jenkins --from-file=.dockerconfigjson=\$HOME/.docker/config.json --dry-run=client -o json | kubectl apply -f -
+                        TOKEN=`aws ecr --region ${AWS_REGION} get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2`
+                        kubectl delete secret --ignore-not-found ${SECRET_NAME}
+                        kubectl create secret docker-registry $SECRET_NAME -n ${NAMESPACE} \
+                        --docker-server=https://${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com \
+                        --docker-username=AWS \
+                        --docker-password="${TOKEN}" \
+                        --docker-email="${EMAIL}"
                         """
                     }
                 }
@@ -118,9 +126,7 @@ spec:
                 container('helm') {
                     sh """
                     helm upgrade --install my-app ./my-app \\
-                        --set deployment.myApp.image.repository=${ECR_REPOSITORY} \\
-                        --set deployment.myApp.image.tag=${IMAGE_TAG} \\
-                        --namespace jenkins \\
+                        --namespace ${NAMESPACE} \\
                         --create-namespace
                     """
                 }
