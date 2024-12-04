@@ -32,7 +32,7 @@ spec:
     environment {
         AWS_CREDENTIALS_ID = 'aws_credentials'
         AWS_ACCOUNT_ID = '051826725870'
-        ECR_REPOSITORY = 'public.ecr.aws/b8e7o6b4'
+        ECR_REPOSITORY = 'public.ecr.aws/b8e7o6b4/rolling/app'
         IMAGE_TAG = 'latest'
         AWS_REGION = 'eu-west-1'
         GIT_REPO = 'https://github.com/dadashussein/dev-das.git'
@@ -62,7 +62,13 @@ spec:
                     sh 'apk add --no-cache aws-cli kubectl' 
                     sh 'aws --version'        
                     sh 'docker --version'             
-                    sh 'kubectl version --client'  
+                    sh 'kubectl version --client'
+                    // Login to ECR Public
+                    sh '''
+                        aws ecr-public get-login-password --region us-east-1 > /tmp/ecr_password
+                        cat /tmp/ecr_password | docker login -u AWS --password-stdin public.ecr.aws/b8e7o6b4
+                        rm -f /tmp/ecr_password
+                    '''
                 }
             }
         }

@@ -1,7 +1,7 @@
 deployment:
   myApp:
     image:
-      repository: 051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs
+      repository: public.ecr.aws/b8e7o6b4/rolling/app
       pullPolicy: Always
       tag: latest
   replicas: 1
