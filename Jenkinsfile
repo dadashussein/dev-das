@@ -39,7 +39,6 @@ spec:
         SECRET_NAME = "${AWS_REGION}-ecr-registry"
         DEPLOYMENT_NAME = 'my-app'
         EMAIL = 'huseynzade.dadas@gmail.com'
-        TOKEN=`aws ecr --region ${AWS_REGION} get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2` 
         GITHUB_REPO = 'https://github.com/dadashussein/dev-das.git'
         GITHUB_BRANCH = 'main'
         NAMESPACE='jenkins'
