@@ -32,7 +32,7 @@ spec:
     environment {
         AWS_CREDENTIALS_ID = 'aws_credentials'
         AWS_ACCOUNT_ID = '051826725870'
-        ECR_REPOSITORY = '051826725870.dkr.ecr.eu-west-1.amazonaws.com/nestjs'
+        ECR_REPOSITORY = 'public.ecr.aws/b8e7o6b4'
         IMAGE_TAG = 'latest'
         AWS_REGION = 'eu-west-1'
         GIT_REPO = 'https://github.com/dadashussein/dev-das.git'
@@ -94,7 +94,7 @@ spec:
                         withCredentials([aws(credentialsId: "${AWS_CREDENTIALS_ID}")]) {
                             // Log in to ECR
                             sh """
-                            aws ecr get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
+                            aws ecr-public get-login-password --region ${AWS_REGION} | docker login -u AWS --password-stdin ${ECR_REPOSITORY}
                             """
                         }
                         // Push Docker image to ECR
@@ -130,7 +130,6 @@ spec:
                         --namespace jenkins \\
                         --set image.repository=${ECR_REPOSITORY} \\
                         --set image.tag=${IMAGE_TAG} \\
-                        --set image.pullSecrets=${SECRET_NAME} \\
                         --create-namespace
                     """
                 }
