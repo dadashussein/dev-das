@@ -19,8 +19,8 @@ spec:
     image: docker:dind
     securityContext:
       privileged: true
-  - name: kubectl
-    image: bitnami/kubectl:latest
+  - name: helm
+    image: alpine/helm:3.11.1  # Helm container
     command: ['cat']
     tty: true
 """
@@ -39,6 +39,7 @@ spec:
         SECRET_NAME = "${AWS_REGION}-ecr-registry"
         DEPLOYMENT_NAME = 'my-app'
         EMAIL = 'huseynzade.dadas@gmail.com'
+        TOKEN=`aws ecr --region ${AWS_REGION} get-authorization-token --output text --query authorizationData[].authorizationToken | base64 -d | cut -d: -f2` 
         GITHUB_REPO = 'https://github.com/dadashussein/dev-das.git'
         GITHUB_BRANCH = 'main'
         NAMESPACE='jenkins'
@@ -115,18 +116,23 @@ spec:
                         --docker-username=AWS \
                         --docker-password="${TOKEN}" \
                         --docker-email="${EMAIL}"
+                        echo "Secret ${SECRET_NAME} created"
+                        kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "${SECRET_NAME}"}]}'
                         '''
                     }
                 }
             }
         }
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes with Helm') {
             when { expression { params.PUSH_TO_ECR == true } }
             steps {
-                container('docker') {
+                container('helm') {
                     sh """
-                    kubectl apply -f deployment.yaml -n ${NAMESPACE}
-                    kubectl apply -f service.yaml -n ${NAMESPACE}
+                    helm upgrade --install my-app ./my-app \\
+                        --namespace jenkins \\
+                        --set image.repository=${ECR_REPOSITORY} \\
+                        --set image.tag=${IMAGE_TAG} \\
+                        --create-namespace
                     """
                 }
             }
