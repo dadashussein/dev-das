@@ -130,6 +130,7 @@ spec:
                         --namespace jenkins \\
                         --set image.repository=${ECR_REPOSITORY} \\
                         --set image.tag=${IMAGE_TAG} \\
+                        --set image.pullSecrets=${SECRET_NAME} \\
                         --create-namespace
                     """
                 }
