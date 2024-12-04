@@ -116,7 +116,6 @@ spec:
                         --docker-password="${TOKEN}" \
                         --docker-email="${EMAIL}"
                         echo "Secret ${SECRET_NAME} created"
-                        kubectl patch serviceaccount default -p '{"imagePullSecrets": [{"name": "${SECRET_NAME}"}]}'
                         '''
                     }
                 }
