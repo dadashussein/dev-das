@@ -127,10 +127,10 @@ spec:
             steps {
                 container('helm') {
                     sh """
+                    echo "ECR_REPOSITORY: ${ECR_REPOSITORY}"
+                    echo "IMAGE_TAG: ${IMAGE_TAG}"
                     helm upgrade --install my-app ./my-app \\
                         --namespace jenkins \\
-                        --set image.repository=${ECR_REPOSITORY} \\
-                        --set image.tag=${IMAGE_TAG} \\
                         --create-namespace
                     """
                 }
