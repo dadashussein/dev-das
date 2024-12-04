@@ -22,16 +22,10 @@ spec:
             - containerPort: 8080
 
 kubernetesClusterDomain: cluster.local
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: myapp-service
-spec:
-  type: NodePort
-  selector:
-    app: myapp
+
+service:
   ports:
-    - port: 80
-      targetPort: 8080
-      protocol: TCP
+  - port: 80
+    protocol: TCP
+    targetPort: 32001
+  type: NodePort
