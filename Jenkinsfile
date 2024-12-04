@@ -19,8 +19,8 @@ spec:
     image: docker:dind
     securityContext:
       privileged: true
-  - name: helm
-    image: alpine/helm:3.11.1  # Helm container
+  - name: kubectl
+    image: bitnami/kubectl:latest
     command: ['cat']
     tty: true
 """
@@ -120,14 +120,13 @@ spec:
                 }
             }
         }
-        stage('Deploy to Kubernetes with Helm') {
+        stage('Deploy to Kubernetes') {
             when { expression { params.PUSH_TO_ECR == true } }
             steps {
-                container('helm') {
+                container('docker') {
                     sh """
-                    helm upgrade --install my-app ./my-app \\
-                        --namespace ${NAMESPACE} \\
-                        --create-namespace
+                    kubectl apply -f deployment.yaml -n ${NAMESPACE}
+                    kubectl apply -f service.yaml -n ${NAMESPACE}
                     """
                 }
             }
